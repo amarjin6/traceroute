@@ -4,8 +4,6 @@ import sys
 
 import struct
 
-from netifaces import interfaces, ifaddresses, AF_INET
-
 
 def traceroute(str):
     try:
