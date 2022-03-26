@@ -2,6 +2,10 @@ import socket
 
 import sys
 
+import struct
+
+from netifaces import interfaces, ifaddresses, AF_INET
+
 
 def traceroute(str):
     try:
@@ -19,13 +23,27 @@ def traceroute(str):
         print("there was an error resolving the host")
         sys.exit()
 
+    print(host_ip)
     # connecting to the server
-    s.connect((host_ip, port))
-    print("the socket has successfully connected to " + host_ip)
-    s.send('Hello'.encode())
-    print(s.recv(1024).decode())
+    for ttl in range(1, 30):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.IPPROTO_IP, socket.IP_TTL, struct.pack('I', ttl))
+        s.settimeout(4)
+        try:
+            try:
+                s.connect((host_ip, port))
+                print('Yeah!')
+            except (socket.error, socket.timeout) as err:
+                print('ttl=%02d: %s' % (ttl, err), s.getpeername(), s.getsockname(), s.proto, s.type, s.gettimeout())
+                continue
+            except KeyboardInterrupt:
+                print('ttl=%02d (KeyboardInterrupt)' % ttl)
+                break
 
-    s.close()
+        finally:
+            s.close()
+        print('ttl=%02d: OK' % (ttl))
+        break
 
 
 if __name__ == '__main__':
