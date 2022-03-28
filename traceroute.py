@@ -1,8 +1,36 @@
-import socket
-
 import sys
-
+import os
+import socket
+import time
 import struct
+import select
+
+
+def future():
+    if not len(sys.argv) == 3:
+        usage()
+        sys.exit(1)
+    ttl = 1
+    host, port = sys.argv[1:]
+    port_int = None
+    try:
+        port_int = int(port)
+    except ValueError:
+        if not os.path.exists('/etc/services'):
+            print
+            'port needs to be an integer if /etc/services does not exist.'
+            sys.exit(1)
+        fd = open('/etc/services')
+        for line in fd:
+            match = re.match(r'^%s\s+(\d+)/tcp.*$' % port, line)
+            if match:
+                port_int = int(match.group(1))
+                break
+        if not port_int:
+            print
+            'port %s not in /etc/services' % port
+            sys.exit(1)
+    port = port_int
 
 
 def traceroute(str):
@@ -22,6 +50,7 @@ def traceroute(str):
         sys.exit()
 
     print(host_ip)
+    s.close()
     # connecting to the server
     for ttl in range(1, 30):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,8 +60,10 @@ def traceroute(str):
             try:
                 s.connect((host_ip, port))
                 print('Yeah!')
+                # msg_in = s.recv(1024).decode()
+                # print(msg_in)
             except (socket.error, socket.timeout) as err:
-                print('ttl=%02d: %s' % (ttl, err), s.getpeername(), s.getsockname(), s.proto, s.type, s.gettimeout())
+                print('ttl=%02d: %s' % (ttl, err), s.getpeername(), s.getsockname())
                 continue
             except KeyboardInterrupt:
                 print('ttl=%02d (KeyboardInterrupt)' % ttl)

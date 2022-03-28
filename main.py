@@ -132,7 +132,7 @@ def main():
     dest_host = sys.argv[1]
     dest_addr = socket.gethostbyname(dest_host)
 
-    print("Tracert to {0} ({1}) over maximum of {2} hops".
+    print("Traceroute to {0} ({1}) over maximum of {2} hops".
           format(dest_addr,
                  dest_host,
                  MAX_HOPS))
