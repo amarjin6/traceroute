@@ -1,0 +1,5 @@
+# Optional requirements for Traceroute
+netifaces==0.11.0
+scapy==2.4.5
+setuptools==61.2.0
+wheel==0.37.1
